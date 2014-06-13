@@ -24,6 +24,7 @@ int STATUS_RED_PIN = 12;
 unsigned long int SEND_PERIOD = 10000; // in milliseconds
 unsigned long int MIN_REC_LEN = 5000; // in milliseconds
 
+unsigned long start = 0;
 IRrecv irrecv(RECV_PIN);
 IRsend irsend;
 
@@ -37,6 +38,7 @@ void setup()
   digitalWrite(BUTTON_PIN, HIGH); // set as internal pull up
   pinMode(STATUS_RED_PIN, OUTPUT);
   pinMode(STATUS_GREEN_PIN, OUTPUT);
+  start = millis();
 }
 
 // Storage for the recorded code
@@ -102,7 +104,9 @@ void storeCode(decode_results *results) {
       Serial.print(codeType, DEC);
       Serial.println("");
     }
-    Serial.println(results->value, HEX);
+    Serial.print(results->value, HEX);
+    Serial.print(", len:");
+    Serial.println(results->bits);
     codeValue = results->value;
     codeLen = results->bits;
   }
@@ -162,40 +166,21 @@ void sendCode(int repeat) {
 }
 
 int first_sending;
-unsigned long start = 0;
+int LOOP_TIME = 3600 * 1000;
 
 void loop() {
-  if (!digitalRead(BUTTON_PIN)) {
-    // start recording
-    irrecv.enableIRIn(); // Re-enable receiver
-    digitalWrite(STATUS_RED_PIN, HIGH);
-    Serial.println("Starting recording...");
-    start = millis();
-    while((!digitalRead(BUTTON_PIN)) || (millis() - start < MIN_REC_LEN)) {
-      if (irrecv.decode(&results)) {
-        digitalWrite(STATUS_GREEN_PIN, HIGH);
-        storeCode(&results);
-        irrecv.resume(); // resume receiver
-        digitalWrite(STATUS_GREEN_PIN, LOW);
-      }
-    }
-    digitalWrite(STATUS_RED_PIN, LOW);
-    first_sending = true;
-
-    // blink a bit to show signs of success
-    for (int i = 1; i < 7; i++) {
-      digitalWrite(STATUS_GREEN_PIN, i%2);
-      delay(100);
-    }
-
-    delay(1000);
-  }
-
-  if(first_sending || (millis() - start >= SEND_PERIOD)) {
+  if (!digitalRead(BUTTON_PIN) || millis() -  start > LOOP_TIME) {
     digitalWrite(STATUS_GREEN_PIN, HIGH);
-    sendCode(first_sending);
-    first_sending = false;
-    delay(200);
+    irsend.sendNEC(0x20DF8D72, 32); // stop
+    delay(2000);
+    irsend.sendNEC(0x20DF22DD, 32); // ok
+    delay(1000);
+    irsend.sendNEC(0x20DF609F, 32); // rechts
+    delay(1000);
+    irsend.sendNEC(0x20DF22DD, 32); // ok
+    delay(1000);
+    irsend.sendNEC(0x20DF55AA, 32); // info
+    delay(400);
     digitalWrite(STATUS_GREEN_PIN, LOW);
     start = millis();
   }
