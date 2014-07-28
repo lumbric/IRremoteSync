@@ -18,9 +18,10 @@
 #include <IRremote.h>
 
 int RECV_PIN = 11;
-int BUTTON_PIN = 9;
-int STATUS_GREEN_PIN = 10;
-int STATUS_RED_PIN = 12;
+int BUTTON_PIN = 12;
+int STATUS_GREEN_PIN = 9;
+int STATUS_RED_PIN = 10;
+int STATUS_BLUE_PIN = 8;
 unsigned long int SEND_PERIOD = 10000; // in milliseconds
 unsigned long int MIN_REC_LEN = 5000; // in milliseconds
 
