@@ -167,7 +167,7 @@ void sendCode(int repeat) {
 }
 
 int first_sending;
-int LOOP_TIME = 3600 * 1000;
+int LOOP_TIME = 10 * 1000;
 
 void loop() {
   if (!digitalRead(BUTTON_PIN) || millis() -  start > LOOP_TIME) {
