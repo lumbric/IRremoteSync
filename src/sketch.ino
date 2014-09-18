@@ -167,10 +167,11 @@ void sendCode(int repeat) {
 }
 
 int first_sending;
-int LOOP_TIME = 10 * 1000;
+unsigned long LOOP_TIME =  600000UL;
 
 void loop() {
-  if (!digitalRead(BUTTON_PIN) || millis() -  start > LOOP_TIME) {
+  if (!digitalRead(BUTTON_PIN) || (millis() -  start > LOOP_TIME)) {
+    Serial.println("Sending sync command...");
     digitalWrite(STATUS_GREEN_PIN, HIGH);
     irsend.sendNEC(0x20DF8D72, 32); // stop
     delay(2000);
